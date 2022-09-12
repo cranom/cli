@@ -7,16 +7,19 @@ import process from "process"
 const config = new Conf()
 const log = console.log
 
-export function create(name: string) {
-  createProject(name)
+export function create(name: string, opts: {type: "docker" | "local" | "git"}) {
+  //console.log(opts)
+  console.log(opts)
+  createProject(name, opts)
 }
 
-function createProject(name: string) {
+function createProject(name: string, opts: {type: "docker" | "local" | "git"}) {
   const token = config.get("access")
   const userId = config.get("userid")
   axios.post(BASE_URL + "deployments/create/project/", {
     name: name,
-    user: userId
+    user: userId,
+    project_type: opts.type
   }, {
     headers: {
       Authorization: "Bearer " + token
@@ -42,3 +45,4 @@ function createProject(name: string) {
     }
   })
 }
+

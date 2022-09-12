@@ -6,8 +6,16 @@ import ignore from 'ignore'
 import { readFileSync } from "fs";
 import cliProgress from "cli-progress"
 import chalk from "chalk"
+import { ProjectInfo } from ".";
+import FormData from "form-data"
+import axios, { AxiosRequestConfig } from "axios"
+import Conf from "conf"
+import { BASE_URL } from "../shared/constants";
 
 const log = console.log
+const config = new Conf()
+
+const token = config.get("access")
 
 export async function buildArtifact() {
   const zipBuffer = await createZipBuffer()
@@ -103,4 +111,47 @@ export async  function getFiles(dir: string): Promise< { filesArray: string[]; d
     filesArray: pages,
     detailed: fileObj
   }
+}
+
+
+export function uploadArtifact(project: string,artifact: Buffer, info : ProjectInfo) {
+  log("\n")
+  log(
+    chalk.cyan("INFO: ") + "Uploading deployment Artifact. Please wait"
+  )
+  const formdata = new FormData()
+  formdata.append("zipped_project", artifact, {
+    filename: "deployment.zip",
+    contentType: "application/octet-stream"
+  })
+  formdata.append("project", info.uuid)
+  formdata.append("user", config.get("userid"))
+  formdata.append("version", info.version + 1)
+
+  const axiosConfig : AxiosRequestConfig = {
+    headers: {
+      Authorization: "Bearer " + token,
+      ...formdata.getHeaders()
+    },
+  }
+  axios.post(BASE_URL + "deployments/create/", formdata.getBuffer(), axiosConfig).then(res=>{
+    
+    const data = res.data
+    
+    log(
+      chalk.greenBright("SUCCESS: ") + "Deployed project " +chalk.cyan(project) + " successfully."
+    )
+    log(
+      "\t" + chalk.gray("Deployment UUID: ") + chalk.yellow(`${data.deployment_uuid}`)
+    )
+    log(
+      "\t" + chalk.gray("Version: ") + chalk.yellow(`v${data.version}`)
+    )
+    log(
+      "\t" + chalk.gray("Time: ") + chalk.yellow(`${data.created_at.slice(0, 20).replace("T", " ")}`)
+    )
+  }).catch(err=>{
+    console.log(err.response)
+    process.exit(1)
+  })
 }

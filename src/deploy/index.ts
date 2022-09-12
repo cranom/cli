@@ -1,11 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { buildArtifact } from "./buildatifact";
+import { buildArtifact, uploadArtifact } from "./artifact";
 import Conf from "conf"
-import axios, { AxiosRequestConfig } from "axios"
+import axios from "axios"
 import chalk from "chalk"
 import { BASE_URL } from "../shared/constants";
-import FormData from "form-data"
 import process from "process"
+import { deployDocker } from "./docker";
+import * as readline from 'node:readline/promises';
+import { stdin as input, stdout as output } from 'node:process';
 
 
 const config = new Conf()
@@ -13,61 +15,37 @@ const log = console.log
 
 const token = config.get("access")
 
-axios.defaults.headers.common['Authorization'] = "Bearer " + token
 
-export async function deploy(projName: string) {
+export async function deploy(projName: string, opts: {image: string}) {
   const info = await getProjectInfo(projName)
-  const artifact = await buildArtifact()
-  uploadArtifact(projName, artifact, info)
-}
-
-function uploadArtifact(project: string,artifact: Buffer, info : ProjectInfo) {
-  log("\n")
-  log(
-    chalk.cyan("INFO: ") + "Uploading deployment Artifact. Please wait"
-  )
-  const formdata = new FormData()
-  formdata.append("zipped_project", artifact, {
-    filename: "deployment.zip",
-    contentType: "application/octet-stream"
-  })
-  formdata.append("project", info.uuid)
-  formdata.append("user", config.get("userid"))
-  formdata.append("version", info.version + 1)
-
-  const axiosConfig : AxiosRequestConfig = {
-    headers: {
-      ...formdata.getHeaders()
-    },
+  if (info.type === "docker") {
+    // Get Image
+    if (opts.image) {
+      deployDocker(projName, opts.image, info)
+    } else {
+      const r1 = readline.createInterface({ input, output });
+      log(chalk.bold("Enter Docker image including the tag:"))
+      const img = await r1.question(chalk.gray(">>> "))
+      r1.close()
+      deployDocker(projName, img, info)
+    }
+    
+  } else {
+    const artifact = await buildArtifact()
+    uploadArtifact(projName, artifact, info)
   }
-  axios.post(BASE_URL + "deployments/create/", formdata.getBuffer(), axiosConfig).then(res=>{
-    
-    const data = res.data
-    
-    log(
-      chalk.greenBright("SUCCESS: ") + "Deployed project " +chalk.cyan(project) + " successfully."
-    )
-    log(
-      "    " + chalk.gray("Deployment UUID: ") + chalk.yellow(`${data.deployment_uuid}`)
-    )
-    log(
-      "    " + chalk.gray("Version: ") + chalk.yellow(`v${data.version}`)
-    )
-    log(
-      "    " + chalk.gray("Time: ") + chalk.yellow(`${data.created_at.slice(0, 20).replace("T", " ")}`)
-    )
-  }).catch(err=>{
-    console.log(err.response)
-    process.exit(1)
-  })
+  
+  
 }
 
-type ProjectInfo = {
+
+export type ProjectInfo = {
   "exists": boolean,
   "name": string,
   "version": number,
   "uuid": string,
-  "deployed": boolean
+  "deployed": boolean,
+  "type": "docker" | "local" | "git"
 }
 
 
@@ -80,6 +58,10 @@ async function getProjectInfo(name: string) : Promise<ProjectInfo> {
     //
     const res = await axios.post(BASE_URL + "deployments/get/project/info/", {
       project: name,
+    }, {
+      headers: {
+        Authorization: "Bearer " + token,
+      }
     })
     const data = res.data as ProjectInfo
     return data
@@ -100,19 +82,3 @@ async function getProjectInfo(name: string) : Promise<ProjectInfo> {
 
 
 
-/* 
-  axios.post(BASE_URL + "deployments/get/project/info/", {
-    project: name,
-  }).then(res => {
-    info = res.data
-  }).catch((err)=>{
-    if (err.response) {
-      if (err.response.data) {
-        log(`${chalk.red("Error: ")}${chalk.gray("Seems like project with name")} ${chalk.cyan(name)} ${chalk.gray("does not exists")}`)
-        process.exit(1)
-      }
-    } else {
-      log(chalk.red("A connection Error Occured"))
-      process.exit(1)
-    }
-  }) */

@@ -1,8 +1,7 @@
 {
-  "name": "cranom",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "name": "cranom-cli",
+  "version": "0.0.1",
+  "description": "A commandline client for working with the Cranom Platform.",
   "scripts": {
     "rollup": "rollup -c rollup.config.js",
     "start": "node bin/index.js",
@@ -10,8 +9,12 @@
     "tsc:init": "tsc --init",
     "eslint:init": "eslint init"
   },
-  "author": "",
-  "license": "ISC",
+  "author": {
+    "name": "Beingana Jim  Junior",
+    "email": "jimjunior854@gmail.com",
+    "url": "https://github.com/jim-junior"
+  },
+  "license": "Apache-2.0",
   "dependencies": {
     "@types/adm-zip": "^0.5.0",
     "adm-zip": "^0.5.9",
@@ -25,13 +28,16 @@
     "form-data": "^4.0.0",
     "ignore": "^5.2.0",
     "jsonwebtoken": "^8.5.1",
-    "node-fetch": "^3.2.10"
+    "node-fetch": "^3.2.10",
+    "socket.io-client": "^4.5.2",
+    "websocket": "^1.0.34"
   },
   "devDependencies": {
     "@eslint/create-config": "0.3.1",
     "@rollup/plugin-typescript": "^8.4.0",
     "@types/cli-progress": "^3.11.0",
     "@types/node": "^18.7.14",
+    "@types/websocket": "^1.0.5",
     "@typescript-eslint/eslint-plugin": "^5.36.1",
     "@typescript-eslint/parser": "^5.36.1",
     "rollup": "^2.79.0",

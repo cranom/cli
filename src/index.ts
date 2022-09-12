@@ -5,6 +5,9 @@ import { getLoginInfoInteractive } from "./auth/interactive";
 import process from 'node:process';
 import { create } from "./create";
 import { deploy } from "./deploy";
+import { getlogs } from "./logs";
+
+
 
 const program = new Command()
 const log = console.log
@@ -44,16 +47,26 @@ program.command("login")
 program.command("deploy")
   .description("Build and deploy app airtifact to Cranom")
   .argument('<name>', "Name of the Project you want to deploy under")
-  .action((project)=>{
-    deploy(project)
+  .option("-i, --image <string>", "Docker image repository")
+  .action((project, opts)=>{
+    deploy(project, opts)
     return
   })
 
 program.command("create")
   .description("Create a new Project")
   .argument("<name>", "Name of project you want to create")
+  .requiredOption("-t, --type <docker|local|git>", "The type of project you want to deploy. ie docker, local, git")
+  .action((projectName, opts)=>{
+    create(projectName, opts)
+  })
+
+program.command("logs")
+  .description("Get logs for a specific deployment")
+  .argument("<project>", "The mane of the project whos logs you want to get")
   .action((projectName)=>{
-    create(projectName)
+    //
+    getlogs()
   })
 
 program.parse()
