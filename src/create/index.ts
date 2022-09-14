@@ -7,19 +7,28 @@ import process from "process"
 const config = new Conf()
 const log = console.log
 
-export function create(name: string, opts: {type: "docker" | "local" | "git"}) {
+export function create(name: string, opts: {type: "docker" | "local" | "git", port: string}) {
   //console.log(opts)
-  console.log(opts)
-  createProject(name, opts)
+  let realPort:  number
+  try {
+    realPort = parseInt(opts.port)
+  } catch {
+    log(
+      chalk.red("ERROR: ") + "Seems the port value is invalid"
+    )
+    process.exit(1)
+  }
+  createProject(name, opts, realPort)
 }
 
-function createProject(name: string, opts: {type: "docker" | "local" | "git"}) {
+function createProject(name: string, opts: {type: "docker" | "local" | "git", port: string}, realPort: number) {
   const token = config.get("access")
   const userId = config.get("userid")
   axios.post(BASE_URL + "deployments/create/project/", {
     name: name,
     user: userId,
-    project_type: opts.type
+    project_type: opts.type,
+    port: realPort
   }, {
     headers: {
       Authorization: "Bearer " + token

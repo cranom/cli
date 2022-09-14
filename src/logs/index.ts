@@ -1,6 +1,7 @@
 
 import { BASE_WS_URL } from "../shared/constants";
 import * as ws from "websocket"
+import process from "process"
 
 export function getlogs() {
   //
@@ -23,8 +24,24 @@ export function getlogs() {
       if (message.type === 'utf8') {
         const data = JSON.parse(message.utf8Data)
         console.log(data.message);
+
+    if (connection.connected) {
+      connection.sendUTF(JSON.stringify({
+        message: "END"
+    }))
+    }
       }
     });
+
+    process.on("SIGINT", (sig)=>{
+      connection.sendUTF(JSON.stringify({
+        message: "END"
+      }))
+      console.log("Exiting logs, Please wait...")
+      connection.close()
+      process.exit()
+    })
+    
     
   });
 
