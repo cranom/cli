@@ -24,12 +24,6 @@ export function getlogs() {
       if (message.type === 'utf8') {
         const data = JSON.parse(message.utf8Data)
         console.log(data.message);
-
-    if (connection.connected) {
-      connection.sendUTF(JSON.stringify({
-        message: "END"
-    }))
-    }
       }
     });
 
