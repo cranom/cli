@@ -27,7 +27,8 @@ export function getlogs() {
       }
     });
 
-    process.on("SIGINT", (sig)=>{
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    process.on("SIGINT", (_)=>{
       connection.sendUTF(JSON.stringify({
         message: "END"
       }))
