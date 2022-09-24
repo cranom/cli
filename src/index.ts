@@ -7,6 +7,7 @@ import { create } from "./create";
 import { deploy } from "./deploy";
 import { getlogs } from "./logs";
 import Conf from "conf"
+import { isLoggedIn } from "./shared/isLoggedIn";
 
 
 const config = new Conf()
@@ -51,6 +52,7 @@ program.command("deploy")
   .argument('<name>', "Name of the Project you want to deploy under")
   .option("-i, --image <string>", "Docker image repository")
   .action((project, opts)=>{
+    isLoggedIn()
     deploy(project, opts)
     return
   })
@@ -61,6 +63,7 @@ program.command("create")
   .requiredOption("-t, --type <docker|local|git>", "The type of project you want to deploy. ie docker, local, git")
   .requiredOption("-p, --port <int>", "The port on which the service should be exposed.")
   .action((projectName, opts)=>{
+    isLoggedIn()
     create(projectName, opts)
   })
 
@@ -68,6 +71,7 @@ program.command("logs")
   .description("Get logs for a specific deployment")
   .argument("<project>", "The mane of the project whos logs you want to get")
   .action((projectName)=>{
+    isLoggedIn()
     //
     getlogs()
   })
