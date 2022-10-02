@@ -73,7 +73,7 @@ program.command("logs")
   .action((projectName)=>{
     isLoggedIn()
     //
-    getlogs()
+    getlogs(projectName)
   })
 
 program.command("logout")

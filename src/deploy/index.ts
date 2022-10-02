@@ -49,7 +49,7 @@ export type ProjectInfo = {
 }
 
 
-async function getProjectInfo(name: string) : Promise<ProjectInfo> {
+export async function getProjectInfo(name: string) : Promise<ProjectInfo> {
   const info = {} as ProjectInfo
   log(
     chalk.cyan("INFO: ") + chalk.gray("Fetching project Info")

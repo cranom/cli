@@ -1,10 +1,35 @@
 
-import { BASE_WS_URL } from "../shared/constants";
+import { BASE_URL, BASE_WS_URL } from "../shared/constants";
 import * as ws from "websocket"
 import process from "process"
+import axios from "axios"
+import Conf from "conf"
+import { getProjectInfo } from "../deploy";
 
-export function getlogs() {
-  //
+
+const config = new Conf()
+
+
+async function getWsToken() {
+  const access = config.get("access")
+  let res = null
+  try {
+    res = await axios.get(BASE_URL + "deployments/get/token/ws/", {
+      headers: {
+        Authorization: "Bearer " + access
+      }
+    })
+  } catch {
+    console.log("An Error Occured")
+    process.exit(1)
+  }
+  return res.data.token
+}
+
+
+export async  function getlogs(name: string) {
+  const projInfo = await getProjectInfo(name)
+  const wstoken = await getWsToken()
   const WebSocketClient = ws.client
   const client = new WebSocketClient()
 
@@ -40,6 +65,5 @@ export function getlogs() {
     
   });
 
-  client.connect(BASE_WS_URL + "logs/");
-
+  client.connect(`${BASE_WS_URL}/logs/${projInfo.uuid}/${wstoken}/`);
 }
