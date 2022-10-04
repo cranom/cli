@@ -53,3 +53,5 @@ Commands:
   help [command]           display help for command
 
 ```
+
+Vists the Documentation for usage on Cranom
