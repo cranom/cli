@@ -1,6 +1,6 @@
 {
   "name": "cranom-cli",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A commandline client for working with the Cranom Platform.",
   "scripts": {
     "rollup": "rollup -c rollup.config.js",
