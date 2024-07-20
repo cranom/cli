@@ -30,13 +30,17 @@ jobs:
 
       - name: Build binary
         run: |
+          GOOS=$(go env GOOS)
+          GOARCH=$(go env GOARCH)
+          RELEASE_NAME=${{ github.event.release.tag_name }}
+          OUTPUT_NAME=cranom-${RELEASE_NAME}-${GOOS}-${GOARCH}${{ matrix.ext }}
+
           mkdir -p output
-          go build -o output/cranom
+          go build -o output/${OUTPUT_NAME}
 
       - name: Upload Release Asset
-        uses: actions/upload-release-asset@v1
+        uses: softprops/action-gh-release@v2.0.8
         with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: output/cranom
-          asset_name: cranom-${{ github.event.release.tag_name }}-${{ matrix.os }}-${{ runner.arch }}${{ matrix.ext }}
-          asset_content_type: application/octet-stream
+          files: output/cranom-${{ github.event.release.tag_name }}-${{ matrix.os }}-${{ runner.arch }}${{ matrix.ext }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
